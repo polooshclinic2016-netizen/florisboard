@@ -19,6 +19,7 @@ package dev.patrickgold.florisboard.ime.keyboard3.ui
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
@@ -59,15 +60,26 @@ fun ImeKeyButton(
     isEnabled: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
-val nlpManager = remember {
+    val imeController = LocalImeController.current
+    val nlpManager = remember {
         dev.patrickgold.florisboard.FlorisImeService.current()?.nlpManager
     }
-    val flickSuggestions = nlpManager?.flickSuggestions?.collectAsState()?.value ?: emptyMap()
+    val flickSuggestions: Map<String, String> = nlpManager?.flickSuggestions?.collectAsState()?.value ?: emptyMap()
     val keyChar = output.asAttrValue().lowercase()
     val flickWord = flickSuggestions[keyChar] ?: ""
+
     ImeKeyButton(elementName, output, isEnabled, modifier) { display ->
         Box(
-            modifier = Modifier.fillMaxHeight(),
+            modifier = Modifier
+                .fillMaxHeight()
+                .pointerInput(flickWord) {
+                    detectVerticalDragGestures { _, dragAmount ->
+                        // ऊपर की तरफ़ फ़्लिक होते ही शब्द टाइप होगा
+                        if (dragAmount < -15f && flickWord.isNotEmpty()) {
+                            dev.patrickgold.florisboard.FlorisImeService.current()?.activeEditorInstance?.commitText(flickWord + " ")
+                        }
+                    }
+                },
             contentAlignment = Alignment.Center,
         ) {
             Display3(
@@ -87,7 +99,6 @@ val nlpManager = remember {
         }
     }
 }
-
 @Composable
 fun ImeKeyButton(
     elementName: String? = null,
