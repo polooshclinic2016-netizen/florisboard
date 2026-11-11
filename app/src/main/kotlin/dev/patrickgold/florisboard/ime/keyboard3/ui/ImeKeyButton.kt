@@ -59,11 +59,8 @@ fun ImeKeyButton(
     output: K3StringOrDescriptor,
     isEnabled: Boolean = true,
     modifier: Modifier = Modifier,
-) {
-    val imeController = LocalImeController.current
-    val nlpManager = remember {
-        dev.patrickgold.florisboard.FlorisImeService.current()?.nlpManager
-    }
+val imeController = LocalImeController.current
+    val nlpManager = dev.patrickgold.florisboard.FlorisImeService.current()?.nlpManager
     val flickSuggestions: Map<String, String> = nlpManager?.flickSuggestions?.collectAsState()?.value ?: emptyMap()
     val keyChar = output.asAttrValue().lowercase()
     val flickWord = flickSuggestions[keyChar] ?: ""
@@ -75,10 +72,8 @@ fun ImeKeyButton(
                 .pointerInput(flickWord) {
                     detectVerticalDragGestures { _, dragAmount ->
                         // ऊपर की तरफ़ फ़्लिक होते ही शब्द टाइप होगा
-                        if (dragAmount < -15f && flickWord.isNotEmpty()) {
-                            dev.patrickgold.florisboard.FlorisImeService.current()?.activeEditorInstance?.commitText(flickWord + " ")
-                        }
-                    }
+                 if (dragAmount < -15f && flickWord.isNotEmpty()) {
+                 dev.patrickgold.florisboard.FlorisImeService.current()?.activeEditorInstance?.commitText(flickWord + " ")                         }
                 },
             contentAlignment = Alignment.Center,
         ) {
