@@ -58,16 +58,27 @@ fun ImeKeyButton(
     isEnabled: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
-    ImeKeyButton(elementName, output, isEnabled, modifier) { display ->
-        Display3(
+  ImeKeyButton(elementName, output, isEnabled, modifier) { display ->
+        Box(
             modifier = Modifier.fillMaxHeight(),
-            display = display,
-        )
-    }
+            contentAlignment = Alignment.Center,
+        ) {
+            Display3(
+                modifier = Modifier.fillMaxHeight(),
+                display = display,
+            )
+            // BB10 Style Floating Word (Key ke theek upar)
+            Text(
+                text = "", // NLP se aane wala word yahan inject hoga
+                color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.8f),
+                fontSize = androidx.compose.ui.unit.sp(9),
+                maxLines = 1,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+            )
+        }
+  }
 }
-
-@Composable
-fun ImeKeyButton(
     elementName: String? = null,
     output: K3StringOrDescriptor,
     isEnabled: Boolean = true,
