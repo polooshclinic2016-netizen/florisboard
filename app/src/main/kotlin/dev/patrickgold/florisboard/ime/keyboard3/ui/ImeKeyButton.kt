@@ -60,8 +60,10 @@ fun ImeKeyButton(
     isEnabled: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
-    val nlpManager = dev.patrickgold.florisboard.FlorisImeService.current()?.nlpManager
-    val flickSuggestions: Map<String, String> = nlpManager?.flickSuggestions?.collectAsState()?.value ?: emptyMap()
+    val imeController = LocalImeController.current
+    val editorInstance = imeController.activeEditorInstance
+    val nlpManager = imeController.nlpManager
+    val flickSuggestions: Map<String, String> = nlpManager?.flickSuggestions?.value ?: emptyMap()
     val keyChar = output.asAttrValue().lowercase()
     val flickWord = flickSuggestions[keyChar] ?: ""
 
@@ -73,7 +75,7 @@ fun ImeKeyButton(
             .pointerInput(flickWord) {
                 detectVerticalDragGestures { _, dragAmount ->
                     if (dragAmount < -15f && flickWord.isNotEmpty()) {
-                        dev.patrickgold.florisboard.FlorisImeService.current()?.activeEditorInstance?.commitText(flickWord + " ")
+                        editorInstance?.commitText(flickWord + " ")
                     }
                 }
             },
@@ -86,6 +88,7 @@ fun ImeKeyButton(
                 modifier = Modifier.fillMaxHeight(),
                 display = display,
             )
+            // BB10 Style Floating Word
             if (flickWord.isNotEmpty()) {
                 Text(
                     text = flickWord,
