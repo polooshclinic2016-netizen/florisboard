@@ -73,7 +73,9 @@ class NlpManager(context: Context) {
     private var internalSuggestions by Delegates.observable(SystemClock.uptimeMillis() to listOf<SuggestionCandidate>()) { _, _, _ ->
         scope.launch { assembleCandidates() }
     }
-
+    // BlackBerry Style: Har key ke liye predicted word ka map
+    private val _flickSuggestions = MutableStateFlow>(emptyMap())
+    val flickSuggestions = _flickSuggestions.asStateFlow()
     private val _activeCandidatesFlow = MutableStateFlow(listOf<SuggestionCandidate>())
     val activeCandidatesFlow = _activeCandidatesFlow.asStateFlow()
     inline var activeCandidates
@@ -292,6 +294,17 @@ class NlpManager(context: Context) {
                 }
                 else -> emptyList()
             }
+           val flickMap = mutableMapOf<String, String>()
+        for (candidate in candidates) {
+            val word = candidate.text.toString()
+            if (word.isNotEmpty()) {
+                val key = word.first().lowercase()
+                if (!flickMap.containsKey(key)) {
+                    flickMap[key] = word
+                }
+            }
+        }
+        _flickSuggestions.value = flickMap
             activeCandidates = candidates
             autoExpandCollapseSmartbarActions(candidates, NlpInlineAutofill.suggestions.value)
         }
