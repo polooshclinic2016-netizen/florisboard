@@ -52,7 +52,6 @@ import org.k3lp.lib.text.K3String
 import org.k3lp.lib.text.K3StringOrDescriptor
 import org.k3lp.lib.text.normalize
 import org.k3lp.lib.text.unicode.NormalizationForm
-
 @Composable
 fun ImeKeyButton(
     elementName: String? = null,
@@ -60,13 +59,14 @@ fun ImeKeyButton(
     isEnabled: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
-  ImeKeyButton(elementName, output, isEnabled, modifier) { display ->
     val ime = LocalImeController.current
     val nlpManager = ime.nlpManager
     val flickSuggestions by nlpManager.flickSuggestions.collectAsState()
     val keyChar = output.asAttrValue().lowercase()
-    val flickWord = flickSuggestions[keyChar] ?: ""  
-      Box(
+    val flickWord = flickSuggestions[keyChar] ?: ""
+
+    ImeKeyButton(elementName, output, isEnabled, modifier) { display ->
+        Box(
             modifier = Modifier.fillMaxHeight(),
             contentAlignment = Alignment.Center,
         ) {
@@ -74,21 +74,22 @@ fun ImeKeyButton(
                 modifier = Modifier.fillMaxHeight(),
                 display = display,
             )
-            // BB10 Style Floating Word (Key ke theek upar)
-        // BB10 Style Floating Word (Key ke theek upar)
-        if (flickWord.isNotEmpty()) {
-            Text(
-                text = flickWord,
-                color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.85f),
-                fontSize = androidx.compose.ui.unit.sp(9),
-                maxLines = 1,
-                modifier = Modifier.align(Alignment.TopCenter)
-            )
+            // BB10 Style Floating Word
+            if (flickWord.isNotEmpty()) {
+                Text(
+                    text = flickWord,
+                    color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.85f),
+                    fontSize = androidx.compose.ui.unit.sp(9),
+                    maxLines = 1,
+                    modifier = Modifier.align(Alignment.TopCenter)
+                )
+            }
         }
-            )
-        }
-  }
+    }
 }
+
+@Composable
+fun ImeKeyButton(
     elementName: String? = null,
     output: K3StringOrDescriptor,
     isEnabled: Boolean = true,
@@ -101,15 +102,6 @@ fun ImeKeyButton(
     val flickWord = flickSuggestions[output.asAttrValue().lowercase()] ?: ""
     val interactionController = LocalInteractionController.current
     val scope = rememberCoroutineScope()
-
-    val imeState by imeController.activeState.collectAsState()
-    val touchLayerId by remember { derivedStateOf { imeState.touchLayerId } }
-    val inputShiftState by remember { derivedStateOf { imeState.flags.inputShiftState } }
-    val model by remember { derivedStateOf { imeState.model } }
-    val display = remember(model, output) { model.displays.byOutput[output]?.display ?: output }
-
-    val isRepeatable = output.isRepeatable()
-    val timingOptions by interactionController.activeTimingOptions.collectAsState()
     val keyRepeatTimeout = timingOptions.getKeyRepeatTimeout(output)
     val keyRepeatDelay = timingOptions.getKeyRepeatDelay(output)
 
