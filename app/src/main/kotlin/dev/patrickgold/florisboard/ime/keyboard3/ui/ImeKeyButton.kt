@@ -148,14 +148,20 @@ fun ImeKeyButton(
                     repeatJob?.cancel()
                     scope.launch {
                         imeController.updateState {
-                            if (up != null) {
-                                interactionSource.tryEmit(PressInteraction.Release(press))
-                                if (!didRepeatTrigger) {
+                        if (up != null) {
+                            interactionSource.tryEmit(PressInteraction.Release(press))
+                            if (!didRepeatTrigger) {
+                                val diffY = down.position.y - up.position.y
+                                if (diffY > 40f) {
+                                    // BlackBerry Style Flick Up
+                                    emit(output)
+                                } else {
                                     emit(output)
                                 }
-                            } else {
-                                interactionSource.tryEmit(PressInteraction.Cancel(press))
                             }
+                        } else {
+                            interactionSource.tryEmit(PressInteraction.Cancel(press))
+                        }
                         }
                     }
                 }
