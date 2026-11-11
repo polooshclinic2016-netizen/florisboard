@@ -59,12 +59,12 @@ fun ImeKeyButton(
     isEnabled: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
-    val ime = LocalImeController.current
-    val nlpManager = ime.nlpManager
-    val flickSuggestions by nlpManager.flickSuggestions.collectAsState()
+val nlpManager = remember {
+        dev.patrickgold.florisboard.FlorisImeService.current()?.nlpManager
+    }
+    val flickSuggestions = nlpManager?.flickSuggestions?.collectAsState()?.value ?: emptyMap()
     val keyChar = output.asAttrValue().lowercase()
     val flickWord = flickSuggestions[keyChar] ?: ""
-
     ImeKeyButton(elementName, output, isEnabled, modifier) { display ->
         Box(
             modifier = Modifier.fillMaxHeight(),
@@ -97,12 +97,8 @@ fun ImeKeyButton(
     content: @Composable BoxScope.(K3StringOrDescriptor) -> Unit,
 ) {
     val imeController = LocalImeController.current
-    val nlpManager = imeController.nlpManager
-    val flickSuggestions by nlpManager.flickSuggestions.collectAsState()
-    val flickWord = flickSuggestions[output.asAttrValue().lowercase()] ?: ""
     val interactionController = LocalInteractionController.current
-    val scope = rememberCoroutineScope()
-    val keyRepeatTimeout = timingOptions.getKeyRepeatTimeout(output)
+    val scope = rememberCoroutineScope
     val keyRepeatDelay = timingOptions.getKeyRepeatDelay(output)
 
     val interactionSource = remember { MutableInteractionSource() }
