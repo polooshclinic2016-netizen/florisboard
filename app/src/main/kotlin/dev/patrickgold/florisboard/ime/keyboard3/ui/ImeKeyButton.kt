@@ -59,44 +59,48 @@ fun ImeKeyButton(
     output: K3StringOrDescriptor,
     isEnabled: Boolean = true,
     modifier: Modifier = Modifier,
-val imeController = LocalImeController.current
+) {
     val nlpManager = dev.patrickgold.florisboard.FlorisImeService.current()?.nlpManager
     val flickSuggestions: Map<String, String> = nlpManager?.flickSuggestions?.collectAsState()?.value ?: emptyMap()
     val keyChar = output.asAttrValue().lowercase()
     val flickWord = flickSuggestions[keyChar] ?: ""
 
-    ImeKeyButton(elementName, output, isEnabled, modifier) { display ->
+    ImeKeyButton(
+        elementName = elementName,
+        output = output,
+        isEnabled = isEnabled,
+        modifier = modifier
+            .pointerInput(flickWord) {
+                detectVerticalDragGestures { _, dragAmount ->
+                    if (dragAmount < -15f && flickWord.isNotEmpty()) {
+                        dev.patrickgold.florisboard.FlorisImeService.current()?.activeEditorInstance?.commitText(flickWord + " ")
+                    }
+                }
+            },
+    ) { display ->
         Box(
-            modifier = Modifier
-                .fillMaxHeight()
-                .pointerInput(flickWord) {
-                    detectVerticalDragGestures { _, dragAmount ->
-                        // ऊपर की तरफ़ फ़्लिक होते ही शब्द टाइप होगा
-                 if (dragAmount < -15f && flickWord.isNotEmpty()) {
-                 dev.patrickgold.florisboard.FlorisImeService.current()?.activeEditorInstance?.commitText(flickWord + " ")                         }
-                },
+            modifier = Modifier.fillMaxHeight(),
             contentAlignment = Alignment.Center,
         ) {
             Display3(
                 modifier = Modifier.fillMaxHeight(),
                 display = display,
             )
-            // BB10 Style Floating Word
             if (flickWord.isNotEmpty()) {
                 Text(
                     text = flickWord,
                     color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.85f),
                     fontSize = androidx.compose.ui.unit.sp(9),
                     maxLines = 1,
-                    modifier = Modifier.align(Alignment.TopCenter)
+                    modifier = Modifier.align(Alignment.TopCenter),
                 )
             }
         }
     }
 }
-@Composable
-fun ImeKeyButton(
-    elementName: String? = null,
+  @Composable
+fun ImeKeyButton(  
+elementName: String? = null,
     output: K3StringOrDescriptor,
     isEnabled: Boolean = true,
     modifier: Modifier = Modifier,
