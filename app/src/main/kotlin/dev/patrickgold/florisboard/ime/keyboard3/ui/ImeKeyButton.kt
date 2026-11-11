@@ -61,7 +61,12 @@ fun ImeKeyButton(
     modifier: Modifier = Modifier,
 ) {
   ImeKeyButton(elementName, output, isEnabled, modifier) { display ->
-        Box(
+    val ime = LocalImeController.current
+    val nlpManager = ime.nlpManager
+    val flickSuggestions by nlpManager.flickSuggestions.collectAsState()
+    val keyChar = output.asAttrValue().lowercase()
+    val flickWord = flickSuggestions[keyChar] ?: ""  
+      Box(
             modifier = Modifier.fillMaxHeight(),
             contentAlignment = Alignment.Center,
         ) {
@@ -70,13 +75,16 @@ fun ImeKeyButton(
                 display = display,
             )
             // BB10 Style Floating Word (Key ke theek upar)
+        // BB10 Style Floating Word (Key ke theek upar)
+        if (flickWord.isNotEmpty()) {
             Text(
-                text = "", // NLP se aane wala word yahan inject hoga
-                color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.8f),
+                text = flickWord,
+                color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.85f),
                 fontSize = androidx.compose.ui.unit.sp(9),
                 maxLines = 1,
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
+        }
             )
         }
   }
@@ -88,6 +96,9 @@ fun ImeKeyButton(
     content: @Composable BoxScope.(K3StringOrDescriptor) -> Unit,
 ) {
     val imeController = LocalImeController.current
+    val nlpManager = imeController.nlpManager
+    val flickSuggestions by nlpManager.flickSuggestions.collectAsState()
+    val flickWord = flickSuggestions[output.asAttrValue().lowercase()] ?: ""
     val interactionController = LocalInteractionController.current
     val scope = rememberCoroutineScope()
 
@@ -151,16 +162,16 @@ fun ImeKeyButton(
                     scope.launch {
                         imeController.updateState {
                         if (up != null) {
-                            interactionSource.tryEmit(PressInteraction.Release(press))
-                            if (!didRepeatTrigger) {
-                                val diffY = down.position.y - up.position.y
-                                if (diffY > 40f) {
-                                    // BlackBerry Style Flick Up
-                                    emit(output)
-                                } else {
-                                    emit(output)
-                                }
-                            }
+                    interactionSource.tryEmit(PressInteraction.Release(press))
+                    if (!didRepeatTrigger) {
+                        val diffY = down.position.y - up.position.y
+                        if (diffY > 40f && flickWord.isNotEmpty()) {
+                            imeController.activeEditorInstance?.commitText(flickWord + " ")
+                        } else {
+                            emit(output)
+                        }
+                    }
+                    
                         } else {
                             interactionSource.tryEmit(PressInteraction.Cancel(press))
                         }
